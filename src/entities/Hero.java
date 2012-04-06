@@ -28,6 +28,13 @@ public class Hero {
 	direction facing;
 	int frame;
 	
+	/**
+	 * Constructor for a Hero object
+	 * 
+	 * @param x initial x position
+	 * @param y initial y position
+	 * @param dir initial direction to face
+	 */
 	public Hero(int x, int y, direction dir)
 	{
 		herox = x;
@@ -39,12 +46,18 @@ public class Hero {
 		frame = 0;
 	}
 	
+	/**
+	 * Updates position based on velocities
+	 */
 	public void updatePosition()
 	{
 		herox += heroxSpeed;
 		heroy += heroySpeed;
 	}
 	
+	/**
+	 * Adjust animation frames and speeds for the character running left
+	 */
 	public void runLeft()
 	{
 		facing = direction.left;
@@ -63,6 +76,9 @@ public class Hero {
 		}
 	}
 	
+	/**
+	 * Adjust animation frames and speeds for the character running right
+	 */
 	public void runRight()
 	{
 		facing = direction.right;
@@ -81,6 +97,9 @@ public class Hero {
 		}
 	}
 	
+	/**
+	 * Adjust idle animation frames and speeds, as well as handle any transitions into the idle state
+	 */
 	public void idle()
 	{
 		if (mState == motionState.running)
@@ -113,6 +132,11 @@ public class Hero {
 			heroxSpeed = (int)(heroxSpeed + 1);
 	}
 	
+	/**
+	 * Mapping of frames to x coordinates on the sprite sheet
+	 * 
+	 * @return the x coordinate of the sprite on the sprite sheet
+	 */
 	public int determineFrameX() 
 	{
 		if (mState == motionState.running || (mState == motionState.endRun && facing == direction.right))
@@ -125,6 +149,11 @@ public class Hero {
 			return 1;
 	}
 	
+	/**
+	 * Mapping of frames to y coordinates on the sprite sheet
+	 * 
+	 * @return the y coordinate of the sprite on the sprite sheet
+	 */
 	public int determineFrameY()
 	{
 		if (mState == motionState.running && facing == direction.right)
@@ -137,6 +166,9 @@ public class Hero {
 			return 0;
 	}
 	
+	/**
+	 * Render the sprite with the correct animation frame and position
+	 */
 	public void renderSprite()
 	{
 		int x = determineFrameX();
@@ -160,6 +192,9 @@ public class Hero {
 		GL11.glEnd();
 	}
 	
+	/**
+	 * Load sprite sheet to OpenGL
+	 */
 	public void loadTexture()
 	{
 		try {
@@ -167,21 +202,41 @@ public class Hero {
 		} catch (IOException e) {e.printStackTrace();}
 	}
 	
+	/**
+	 * Getter for x coordinate
+	 * 
+	 * @return hero x coordinate
+	 */
 	public int getX()
 	{
 		return (int)herox;
 	}
 	
+	/**
+	 * Getter for y coordinate
+	 * 
+	 * @return hero y coordinate
+	 */
 	public int getY()
 	{
 		return (int)heroy;
 	}
 	
+	/**
+	 * Setter for x coordinate
+	 * 
+	 * @param x new hero x coordinate
+	 */
 	public void setX(int x)
 	{
 		herox = x;
 	}
 	
+	/**
+	 * Setter for y coordinate
+	 * 
+	 * @param y new hero y coordinate
+	 */
 	public void setY(int y)
 	{
 		heroy = y;

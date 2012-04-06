@@ -17,6 +17,9 @@ public class GameMain {
 	
 	Hero hero;
 	
+	/**
+	 * Main game loop, this is where everything happens
+	 */
 	public void gameLoop()
 	{		
 		//Initialization
@@ -42,6 +45,9 @@ public class GameMain {
 		Display.destroy();
 	}
 	
+	/**
+	 * Poll for input on the keyboard
+	 */
 	public void pollKeyboardInput()
 	{
 		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT))
@@ -58,6 +64,9 @@ public class GameMain {
 		}
 	}
 	
+	/**
+	 * Collision detection between the hero and the stage
+	 */
 	public void detectTerrainCollision()
 	{
 		if (hero.getX() < 0)
@@ -72,17 +81,20 @@ public class GameMain {
 		if (hero.getY() < 0)
 		{
 			hero.setY(0);
-			System.out.println("On Ground");
 		}
-		else
-			System.out.println("Not On Ground");
 	}
 	
+	/**
+	 * Initialize all entities (currently just the hero)
+	 */
 	public void initEntities()
 	{
 		hero = new Hero(0, 0, direction.right);
 	}
 	
+	/**
+	 * Initialize the game window and all OpenGL-related setup
+	 */
 	public void initGL()
 	{
 		//Create game window
@@ -114,11 +126,17 @@ public class GameMain {
 		GL11.glDisable(GL11.GL_LIGHTING);
 	}
 	
+	/**
+	 * Load the textures for all entities (will eventually include background and stage textures
+	 */
 	public void loadTextures()
 	{
 		hero.loadTexture();
 	}
 	
+	/**
+	 * Render any graphics (currently just the hero)
+	 */
 	public void renderGL()
 	{
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
@@ -128,6 +146,11 @@ public class GameMain {
 		GL11.glPopMatrix();
 	}
 	
+	/**
+	 * Main class, simply constructs and runs the game
+	 * 
+	 * @param args the usual...
+	 */
 	public static void main(String[] args)
 	{
 		GameMain gameMain = new GameMain();
