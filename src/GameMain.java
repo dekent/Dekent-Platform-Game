@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
@@ -10,12 +11,17 @@ import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 import org.newdawn.slick.util.ResourceLoader;
 
+import terrain.Block;
+import terrain.Coordinate;
+import terrain.Level;
+
 import entities.Hero;
 import entities.Hero.direction;
 
 public class GameMain {
 	
 	Hero hero;
+	Level terrain;
 	
 	/**
 	 * Main game loop, this is where everything happens
@@ -25,11 +31,13 @@ public class GameMain {
 		//Initialization
 		initGL();
 		initEntities();
+		initTerrain();
 		loadTextures();
 		
 		//Main game loop
 		while(!Display.isCloseRequested())	//exits when window is closed
 		{
+			hero.onGround(terrain);
 			hero.updatePosition();
 			detectTerrainCollision();
 			
@@ -78,10 +86,7 @@ public class GameMain {
 			hero.setX(800 - 64);
 		}
 		
-		if (hero.getY() < 0)
-		{
-			hero.setY(0);
-		}
+		hero.checkTerrainCollision(terrain);
 	}
 	
 	/**
@@ -89,7 +94,17 @@ public class GameMain {
 	 */
 	public void initEntities()
 	{
-		hero = new Hero(0, 0, direction.right);
+		hero = new Hero(0, 200, direction.right);
+	}
+	
+	public void initTerrain()
+	{
+		ArrayList<Block> temp = new ArrayList<Block>();
+		temp.add(new Block(new Coordinate(0,0), new Coordinate(300, 0), new Coordinate(300, 200), new Coordinate(0, 200)));
+		temp.add(new Block(new Coordinate(0,200), new Coordinate(10, 200), new Coordinate(10, 600), new Coordinate(0, 600)));
+		temp.add(new Block(new Coordinate(300,0), new Coordinate(800, 0), new Coordinate(800, 20), new Coordinate(300, 20)));
+		temp.add(new Block(new Coordinate(790,20), new Coordinate(800, 20), new Coordinate(800, 600), new Coordinate(790, 600)));
+		terrain = new Level(temp);
 	}
 	
 	/**
@@ -105,9 +120,6 @@ public class GameMain {
 			e.printStackTrace();
 			System.exit(0);
 		}
-		
-		//Enable texures
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		
 		GL11.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 		
@@ -141,6 +153,9 @@ public class GameMain {
 	{
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 		
+		GL11.glPushMatrix();
+			terrain.renderTerrain();
+		GL11.glPopMatrix();
 		GL11.glPushMatrix();
 			hero.renderSprite();
 		GL11.glPopMatrix();

@@ -7,6 +7,8 @@ import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 import org.newdawn.slick.util.ResourceLoader;
 
+import terrain.Level;
+
 public class Hero {
 	float SPRITE_PIXEL = 1.0f/512.0f;
 	
@@ -26,6 +28,7 @@ public class Hero {
 	float heroySpeed;
 	motionState mState;
 	direction facing;
+	boolean onGround;
 	int frame;
 	
 	/**
@@ -43,6 +46,7 @@ public class Hero {
 		heroySpeed = 0;
 		mState = motionState.idle;
 		facing = dir;
+		onGround = true;
 		frame = 0;
 	}
 	
@@ -52,7 +56,19 @@ public class Hero {
 	public void updatePosition()
 	{
 		herox += heroxSpeed;
-		heroy += heroySpeed;
+		
+		if (!onGround)
+		{
+			heroySpeed -= .2;
+			if (heroySpeed < -10)
+				heroySpeed = -10;
+			heroy += heroySpeed;
+			System.out.println(heroySpeed);
+		}
+		else
+		{
+			heroySpeed = 0;
+		}
 	}
 	
 	/**
@@ -132,6 +148,23 @@ public class Hero {
 			heroxSpeed = (int)(heroxSpeed + 1);
 	}
 	
+	
+	public void onGround(Level terrain)
+	{
+		onGround = terrain.checkIfStanding(getX() + 20, getX() + 44, getY());
+	}
+	
+	public void checkTerrainCollision(Level terrain)
+	{	
+		int correctedPos;
+		
+		//First, detect horizontal collision.  If a horizontal collision is detected, stop there.  Otherwise, go on to vertical collision detection
+		
+		correctedPos = terrain.detectVerticalCollision(getX() + 20, getX() + 44, getY());
+		if (correctedPos != -999)
+			heroy = correctedPos;
+	}
+	
 	/**
 	 * Mapping of frames to x coordinates on the sprite sheet
 	 * 
@@ -173,6 +206,10 @@ public class Hero {
 	{
 		int x = determineFrameX();
 		int y = determineFrameY();
+	
+		GL11.glColor3f(1.0f, 1.0f, 1.0f);
+		
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
 		
 		GL11.glTranslatef(getX(), getY(), 0);
 
