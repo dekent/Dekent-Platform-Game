@@ -11,6 +11,7 @@ import org.newdawn.slick.opengl.TextureLoader;
 import org.newdawn.slick.util.ResourceLoader;
 
 import entities.Hero;
+import entities.Hero.direction;
 
 public class GameMain {
 	
@@ -27,6 +28,7 @@ public class GameMain {
 		while(!Display.isCloseRequested())	//exits when window is closed
 		{
 			hero.updatePosition();
+			detectTerrainCollision();
 			
 			renderGL();
 			
@@ -56,9 +58,29 @@ public class GameMain {
 		}
 	}
 	
+	public void detectTerrainCollision()
+	{
+		if (hero.getX() < 0)
+		{
+			hero.setX(0);
+		}
+		else if (hero.getX() > 800 - 64)
+		{
+			hero.setX(800 - 64);
+		}
+		
+		if (hero.getY() < 0)
+		{
+			hero.setY(0);
+			System.out.println("On Ground");
+		}
+		else
+			System.out.println("Not On Ground");
+	}
+	
 	public void initEntities()
 	{
-		hero = new Hero(0, 0, true);
+		hero = new Hero(0, 0, direction.right);
 	}
 	
 	public void initGL()

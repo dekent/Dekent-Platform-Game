@@ -12,94 +12,114 @@ public class Hero {
 	
 	private Texture texture;
 	
-	int herox;
-	int heroy;
-	float heroxSpeed;
-	float heroySpeed;
-	boolean runningLeft;
-	boolean runningRight;
-	boolean facingRight;
-	int frame;
-	
 	enum motionState {
 		running, jumping, idle, ducking, beginDuck, beginJump, endRun, endDuck, landing, rolling
 	}
 	
-	enum direction {
+	public enum direction {
 		right, left
 	}
 	
-	public Hero(int x, int y, boolean faceRight)
+	float herox;
+	float heroy;
+	float heroxSpeed;
+	float heroySpeed;
+	motionState mState;
+	direction facing;
+	int frame;
+	
+	public Hero(int x, int y, direction dir)
 	{
 		herox = x;
 		heroy = y;
 		heroxSpeed = 0;
 		heroySpeed = 0;
-		runningLeft = false;
-		runningRight = false;
-		facingRight = faceRight;
+		mState = motionState.idle;
+		facing = dir;
 		frame = 0;
 	}
 	
 	public void updatePosition()
 	{
-		herox += (int)heroxSpeed;
-		heroy += (int)heroySpeed;
+		herox += heroxSpeed;
+		heroy += heroySpeed;
 	}
 	
 	public void runLeft()
 	{
-		facingRight = false;
+		facing = direction.left;
 		
-		if (!runningLeft)
+		if (mState != motionState.running)
 		{
-			runningLeft = true;
-			runningRight = false;
-			frame = 0;
-			heroxSpeed = -1;
+			mState = motionState.running;
+			frame = 32;	//closest run frame to the idle position for a more natural start
+			heroxSpeed = -.5f;
 		}
 		else
 		{
 			frame = (frame + 1) % 48;
 			if (heroxSpeed > -3)
-				heroxSpeed --;
+				heroxSpeed -= .5f;
 		}
 	}
 	
 	public void runRight()
 	{
-		facingRight = true;
+		facing = direction.right;
 		
-		if (!runningRight)
+		if (mState != motionState.running)
 		{
-			runningLeft = false;
-			runningRight = true;
-			frame = 0;
-			heroxSpeed = 1;
+			mState = motionState.running;
+			frame = 32;	//closest run frame to the idle position for a more natural start
+			heroxSpeed = .5f;
 		}
 		else
 		{
 			frame = (frame + 1) % 48;
 			if (heroxSpeed < 3)
-				heroxSpeed ++;
+				heroxSpeed += .5f;
 		}
 	}
 	
 	public void idle()
 	{
-		runningLeft = false;
-		runningRight = false;
+		if (mState == motionState.running)
+		{
+			mState = motionState.endRun;
+			if (frame < 8 || frame >= 32)
+				frame = 0;
+			else if (frame < 16 && frame >= 8)
+				frame = 4;
+			else
+				frame = 8;
+		}
+		else if (mState == motionState.endRun)
+		{
+			frame ++;
+			if (frame == 8 || frame == 16)
+			{
+				frame = 0;
+				mState = motionState.idle;
+			}
+		}
+		else
+		{
+			mState = motionState.idle;
+		}
+		
 		if (heroxSpeed > 0)
-			heroxSpeed --;
+			heroxSpeed = (int)(heroxSpeed - 1);
 		else if (heroxSpeed < 0)
-			heroxSpeed ++;
+			heroxSpeed = (int)(heroxSpeed + 1);
 	}
 	
 	public int determineFrameX() 
 	{
-		if (runningLeft || runningRight)
+		if (mState == motionState.running || (mState == motionState.endRun && facing == direction.right))
 			return (int)frame/4;
-		else if (facingRight)
+		else if (mState == motionState.endRun && facing == direction.left)
+			return (int)frame/4 + 4;
+		else if (facing == direction.right)
 			return 0;
 		else
 			return 1;
@@ -107,10 +127,12 @@ public class Hero {
 	
 	public int determineFrameY()
 	{
-		if (runningLeft)
-			return 2;
-		else if (runningRight)
+		if (mState == motionState.running && facing == direction.right)
 			return 1;
+		else if (mState == motionState.running && facing == direction.left)
+			return 2;
+		else if (mState == motionState.endRun)
+			return 3;
 		else
 			return 0;
 	}
@@ -120,7 +142,7 @@ public class Hero {
 		int x = determineFrameX();
 		int y = determineFrameY();
 		
-		GL11.glTranslatef(herox, heroy, 0);
+		GL11.glTranslatef(getX(), getY(), 0);
 
 		texture.bind();
 		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
@@ -143,5 +165,25 @@ public class Hero {
 		try {
 			texture = TextureLoader.getTexture("png", ResourceLoader.getResourceAsStream("sprites/prototype2.png"));
 		} catch (IOException e) {e.printStackTrace();}
+	}
+	
+	public int getX()
+	{
+		return (int)herox;
+	}
+	
+	public int getY()
+	{
+		return (int)heroy;
+	}
+	
+	public void setX(int x)
+	{
+		herox = x;
+	}
+	
+	public void setY(int y)
+	{
+		heroy = y;
 	}
 }
