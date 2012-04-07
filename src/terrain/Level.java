@@ -48,7 +48,7 @@ public class Level {
 		return false;
 	}
 	
-	public int detectVerticalCollision(int x1, int x2, int y)
+	public int detectGroundCollision(int x1, int x2, int y)
 	{
 		for (int i = 0; i < terrainList.size(); i++)
 		{
@@ -59,6 +59,63 @@ public class Level {
 					if (j >= terrainList.get(i).bounds[3].x && j <= terrainList.get(i).bounds[2].x)
 					{
 						return terrainList.get(i).bounds[2].y;
+					}
+				}
+			}
+		}
+		
+		return -999;
+	}
+	
+	public int detectRoofCollision(int x1, int x2, int y)
+	{
+		for (int i = 0; i < terrainList.size(); i++)
+		{
+			if (y <= terrainList.get(i).bounds[2].y && y >= terrainList.get(i).bounds[0].y)
+			{
+				for (int j = x1; j <= x2; j++)
+				{
+					if (j >= terrainList.get(i).bounds[3].x && j <= terrainList.get(i).bounds[2].x)
+					{
+						return terrainList.get(i).bounds[0].y;
+					}
+				}
+			}
+		}
+		
+		return -999;
+	}
+	
+	public int detectLeftCollision(int x, int y1, int y2)
+	{
+		for (int i = 0; i < terrainList.size(); i++)
+		{
+			if (x <= terrainList.get(i).bounds[1].x && x >= terrainList.get(i).bounds[0].x)
+			{
+				for (int j = y1; j <= y2; j++)
+				{
+					if (j >= terrainList.get(i).bounds[1].y && j <= terrainList.get(i).bounds[2].y)
+					{
+						return terrainList.get(i).bounds[1].x;
+					}
+				}
+			}
+		}
+		
+		return -999;
+	}
+	
+	public int detectRightCollision(int x, int y1, int y2)
+	{
+		for (int i = 0; i < terrainList.size(); i++)
+		{
+			if (x <= terrainList.get(i).bounds[1].x && x >= terrainList.get(i).bounds[0].x)
+			{
+				for (int j = y1; j <= y2; j++)
+				{
+					if (j >= terrainList.get(i).bounds[1].y && j <= terrainList.get(i).bounds[2].y)
+					{
+						return terrainList.get(i).bounds[0].x;
 					}
 				}
 			}

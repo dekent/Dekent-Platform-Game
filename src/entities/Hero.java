@@ -29,6 +29,7 @@ public class Hero {
 	motionState mState;
 	direction facing;
 	boolean onGround;
+	int[] hitbox = {20, 44, 0, 52};	//x1, x2, y1, y2
 	int frame;
 	
 	/**
@@ -62,12 +63,15 @@ public class Hero {
 			heroySpeed -= .2;
 			if (heroySpeed < -10)
 				heroySpeed = -10;
-			heroy += heroySpeed;
-			System.out.println(heroySpeed);
 		}
-		else
+		heroy += heroySpeed;
+	}
+	
+	public void jump()
+	{
+		if (onGround)
 		{
-			heroySpeed = 0;
+			heroySpeed = 8.5f;
 		}
 	}
 	
@@ -151,18 +155,45 @@ public class Hero {
 	
 	public void onGround(Level terrain)
 	{
-		onGround = terrain.checkIfStanding(getX() + 20, getX() + 44, getY());
+		onGround = terrain.checkIfStanding(getX() + hitbox[0], getX() + hitbox[1], getY() + hitbox[2]);
 	}
 	
 	public void checkTerrainCollision(Level terrain)
 	{	
 		int correctedPos;
 		
-		//First, detect horizontal collision.  If a horizontal collision is detected, stop there.  Otherwise, go on to vertical collision detection
+		if (heroySpeed < 0)
+		{
+			correctedPos = terrain.detectGroundCollision(getX() + hitbox[0], getX() + hitbox[1], getY() + hitbox[2]);
+			if (correctedPos != -999)
+			{
+				heroy = correctedPos - hitbox[2];
+				heroySpeed = 0;
+			}
+		}
+		else if (heroySpeed > 0)
+		{
+			correctedPos = terrain.detectRoofCollision(getX() + hitbox[0], getX() + hitbox[1], getY() + hitbox[3]);
+			if (correctedPos != -999)
+			{
+				heroy = correctedPos - hitbox[3] - 1;
+				heroySpeed = 0;
+			}
+		}
 		
-		correctedPos = terrain.detectVerticalCollision(getX() + 20, getX() + 44, getY());
+		correctedPos = terrain.detectLeftCollision(getX() + hitbox[0] - 3, getY() + hitbox[2] + 1, getY() + hitbox[3]);
 		if (correctedPos != -999)
-			heroy = correctedPos;
+		{
+			herox = correctedPos - (hitbox[0] - 4);
+			heroxSpeed = 0;
+		}
+		
+		correctedPos = terrain.detectRightCollision(getX() + hitbox[1] + 3, getY() + hitbox[2] + 1, getY() + hitbox[3]);
+		if (correctedPos != -999)
+		{
+			herox = correctedPos - (hitbox[1] + 4);
+			heroxSpeed = 0;
+		}
 	}
 	
 	/**

@@ -58,6 +58,11 @@ public class GameMain {
 	 */
 	public void pollKeyboardInput()
 	{
+		if (Keyboard.isKeyDown(Keyboard.KEY_UP))
+		{
+			hero.jump();
+		}
+		
 		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT))
 		{
 			hero.runLeft();
@@ -76,16 +81,7 @@ public class GameMain {
 	 * Collision detection between the hero and the stage
 	 */
 	public void detectTerrainCollision()
-	{
-		if (hero.getX() < 0)
-		{
-			hero.setX(0);
-		}
-		else if (hero.getX() > 800 - 64)
-		{
-			hero.setX(800 - 64);
-		}
-		
+	{		
 		hero.checkTerrainCollision(terrain);
 	}
 	
@@ -100,10 +96,11 @@ public class GameMain {
 	public void initTerrain()
 	{
 		ArrayList<Block> temp = new ArrayList<Block>();
-		temp.add(new Block(new Coordinate(0,0), new Coordinate(300, 0), new Coordinate(300, 200), new Coordinate(0, 200)));
-		temp.add(new Block(new Coordinate(0,200), new Coordinate(10, 200), new Coordinate(10, 600), new Coordinate(0, 600)));
-		temp.add(new Block(new Coordinate(300,0), new Coordinate(800, 0), new Coordinate(800, 20), new Coordinate(300, 20)));
-		temp.add(new Block(new Coordinate(790,20), new Coordinate(800, 20), new Coordinate(800, 600), new Coordinate(790, 600)));
+		temp.add(new Block(new Coordinate(0, 0), new Coordinate(300, 0), new Coordinate(300, 200), new Coordinate(0, 200)));
+		temp.add(new Block(new Coordinate(0, 200), new Coordinate(10, 200), new Coordinate(10, 600), new Coordinate(0, 600)));
+		temp.add(new Block(new Coordinate(300, 0), new Coordinate(800, 0), new Coordinate(800, 20), new Coordinate(300, 20)));
+		temp.add(new Block(new Coordinate(790, 20), new Coordinate(800, 20), new Coordinate(800, 600), new Coordinate(790, 600)));
+		temp.add(new Block(new Coordinate(750, 80), new Coordinate(790, 80), new Coordinate(790, 100), new Coordinate(750, 100)));
 		terrain = new Level(temp);
 	}
 	
