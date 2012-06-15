@@ -9,12 +9,15 @@ import org.newdawn.slick.util.ResourceLoader;
 
 import terrain.Level;
 
+import static entities.Hero.motionState.*;
+import static entities.Hero.direction.*;
+
 public class Hero {
 	float SPRITE_PIXEL = 1.0f/512.0f;
 	
 	private Texture texture;
 	
-	enum motionState {
+	public enum motionState {
 		running, jumping, idle, ducking, beginDuck, beginJump, endRun, endDuck, landing, rolling
 	}
 	
@@ -27,10 +30,13 @@ public class Hero {
 	float heroxSpeed;
 	float heroySpeed;
 	motionState mState;
+	motionState prevMState;
 	direction facing;
 	boolean onGround;
 	int[] hitbox = {20, 44, 0, 52};	//x1, x2, y1, y2
 	int frame;
+	int jumpCounter = 0;
+	boolean finishedJump = true;
 	
 	/**
 	 * Constructor for a Hero object
@@ -45,7 +51,7 @@ public class Hero {
 		heroy = y;
 		heroxSpeed = 0;
 		heroySpeed = 0;
-		mState = motionState.idle;
+		mState = idle;
 		facing = dir;
 		onGround = true;
 		frame = 0;
@@ -58,104 +64,267 @@ public class Hero {
 	{
 		herox += heroxSpeed;
 		
+		/*
 		if (!onGround)
 		{
 			heroySpeed -= .2;
 			if (heroySpeed < -10)
 				heroySpeed = -10;
 		}
+		*/
 		heroy += heroySpeed;
 	}
 	
-	public void jump()
+	public void up()
 	{
 		if (onGround)
 		{
-			heroySpeed = 8.5f;
+			finishedJump = false;
+			jumpCounter = 0;
+			mState = beginJump;
+			heroySpeed = 9;
 		}
+		else if (!finishedJump)
+		{
+			heroySpeed -= .4;
+			if (heroySpeed < -15)
+				heroySpeed = -15;
+			/*
+			jumpCounter ++;
+			if (jumpCounter < 5)
+				heroySpeed += 1;
+			
+			heroySpeed -= .2;
+			
+			if (jumpCounter > 20)
+				finishedJump = true;
+			*/
+		}
+		else
+		{
+			verticalIdle();
+		}
+		/*
+		if (onGround)
+		{
+			mState = beginJump;
+			frame = 0;
+			heroySpeed = 3.0f;
+		}
+		else if (mState == beginJump)
+		{
+			idle();
+			
+		}
+		else
+		{
+			idle();
+			
+		}
+		*/
 	}
 	
 	/**
 	 * Adjust animation frames and speeds for the character running left
 	 */
-	public void runLeft()
+	public void left()
 	{
-		facing = direction.left;
-		
-		if (mState != motionState.running)
+		if (mState != jumping && mState != beginJump && mState != ducking)
 		{
-			mState = motionState.running;
-			frame = 32;	//closest run frame to the idle position for a more natural start
-			heroxSpeed = -.5f;
+			facing = left;
+			
+			mState = running;
+			
+			if (heroxSpeed > 0)
+				heroxSpeed = -.5f;
+			else if (heroxSpeed > -4)
+				heroxSpeed -= .5f;
 		}
 		else
 		{
-			frame = (frame + 1) % 48;
-			if (heroxSpeed > -3)
-				heroxSpeed -= .5f;
+			if (heroxSpeed > -4)
+				heroxSpeed -= .25f;
 		}
+		
+		/*
+		if (mState != motionState.beginJump && mState != motionState.jumping)
+		{
+			facing = direction.left;
+			
+			if (mState != motionState.running)
+			{
+				mState = motionState.running;
+				frame = 32;	//closest run frame to the idle position for a more natural start
+				heroxSpeed = -.5f;
+			}
+			else
+			{
+				frame = (frame + 1) % 48;
+				if (heroxSpeed > -3)
+					heroxSpeed -= .5f;
+			}
+		}
+		else
+		{
+			if (heroxSpeed > -3)
+				heroxSpeed -= .25f;
+		}
+		*/
 	}
 	
 	/**
 	 * Adjust animation frames and speeds for the character running right
 	 */
-	public void runRight()
+	public void right()
 	{
-		facing = direction.right;
-		
-		if (mState != motionState.running)
+		if (mState != jumping && mState != beginJump && mState != ducking)
 		{
-			mState = motionState.running;
-			frame = 32;	//closest run frame to the idle position for a more natural start
-			heroxSpeed = .5f;
+			facing = right;
+			
+			mState = running;
+			
+			if (heroxSpeed < 0)
+				heroxSpeed = .5f;
+			else if (heroxSpeed < 4)
+				heroxSpeed += .5f;
 		}
 		else
 		{
-			frame = (frame + 1) % 48;
-			if (heroxSpeed < 3)
-				heroxSpeed += .5f;
+			if (heroxSpeed < 4)
+				heroxSpeed += .25f;
 		}
+		/*
+		if (mState != motionState.beginJump && mState != motionState.jumping)
+		{
+			facing = direction.right;
+			
+			if (mState != motionState.running)
+			{
+				mState = motionState.running;
+				frame = 32;	//closest run frame to the idle position for a more natural start
+				heroxSpeed = .5f;
+			}
+			else
+			{
+				frame = (frame + 1) % 48;
+				if (heroxSpeed < 3)
+					heroxSpeed += .5f;
+			}
+		}
+		else
+		{
+			if (heroxSpeed < 3)
+				heroxSpeed += .25f;
+		}
+		*/
 	}
 	
 	/**
 	 * Adjust idle animation frames and speeds, as well as handle any transitions into the idle state
 	 */
-	public void idle()
+	public void horizontalIdle()
 	{
-		if (mState == motionState.running)
+		if (mState == jumping || mState == beginJump)
 		{
-			mState = motionState.endRun;
-			if (frame < 8 || frame >= 32)
-				frame = 0;
-			else if (frame < 16 && frame >= 8)
-				frame = 4;
-			else
-				frame = 8;
-		}
-		else if (mState == motionState.endRun)
-		{
-			frame ++;
-			if (frame == 8 || frame == 16)
-			{
-				frame = 0;
-				mState = motionState.idle;
-			}
+			if (heroxSpeed > 0)
+				heroxSpeed -= .05f;
+			else if (heroxSpeed < 0)
+				heroxSpeed += .05f;
+			
+			if (heroxSpeed > -.05 && heroxSpeed < .05)
+				heroxSpeed = 0;
 		}
 		else
 		{
-			mState = motionState.idle;
+			if (heroxSpeed > 0)
+				heroxSpeed = (int)(heroxSpeed - 1);
+			else if (heroxSpeed < 0)
+				heroxSpeed = (int)(heroxSpeed + 1);
 		}
-		
-		if (heroxSpeed > 0)
-			heroxSpeed = (int)(heroxSpeed - 1);
-		else if (heroxSpeed < 0)
-			heroxSpeed = (int)(heroxSpeed + 1);
+		/*
+		if (mState == motionState.jumping || mState == motionState.beginJump)
+		{
+			if (mState == motionState.beginJump)
+			{
+				frame ++;
+				if (frame == 12)
+				{
+					mState = motionState.jumping;
+				}
+			}
+			else
+			{
+				frame = (frame + 1) % 8;
+			}
+			
+			if (heroxSpeed > 0)
+				heroxSpeed = heroxSpeed - .05f;
+			else if (heroxSpeed < 0)
+				heroxSpeed = heroxSpeed + .05f;
+			
+			if (heroxSpeed < .05 && heroxSpeed > -.05)
+				heroxSpeed = 0;
+		}
+		else
+		{
+			if (mState == motionState.running)
+			{
+				mState = motionState.endRun;
+				if (frame < 8 || frame >= 32)
+					frame = 0;
+				else if (frame < 16 && frame >= 8)
+					frame = 4;
+				else
+					frame = 8;
+			}
+			else if (mState == motionState.endRun)
+			{
+				frame ++;
+				if (frame == 8 || frame == 16)
+				{
+					frame = 0;
+					mState = motionState.idle;
+				}
+			}
+			else
+			{
+				mState = motionState.idle;
+			}
+			
+			if (heroxSpeed > 0)
+				heroxSpeed = (int)(heroxSpeed - 1);
+			else if (heroxSpeed < 0)
+				heroxSpeed = (int)(heroxSpeed + 1);
+		}
+		*/
 	}
 	
+	public void verticalIdle()
+	{
+		if (!finishedJump)
+		{
+			finishedJump = true;
+			if (heroySpeed > 3)
+				heroySpeed = 3;
+			finishedJump = true;
+		}
+		
+		if (!onGround)
+		{
+			heroySpeed -= .4;
+			if (heroySpeed < -15)
+				heroySpeed = -15;
+		}
+	}
 	
-	public void onGround(Level terrain)
+	public boolean onGround(Level terrain)
 	{
 		onGround = terrain.checkIfStanding(getX() + hitbox[0], getX() + hitbox[1], getY() + hitbox[2]);
+		if (onGround && (mState == motionState.jumping || mState == motionState.beginJump))
+		{
+			mState = motionState.idle;
+		}
+		return onGround;
 	}
 	
 	public void checkTerrainCollision(Level terrain)
@@ -207,6 +376,10 @@ public class Hero {
 			return (int)frame/4;
 		else if (mState == motionState.endRun && facing == direction.left)
 			return (int)frame/4 + 4;
+		else if (mState == motionState.beginJump)	//TODO: add directions
+			return (int)frame/4;
+		else if (mState == motionState.jumping)	//TODO: add directions and animation
+			return 3;
 		else if (facing == direction.right)
 			return 0;
 		else
@@ -226,6 +399,8 @@ public class Hero {
 			return 2;
 		else if (mState == motionState.endRun)
 			return 3;
+		else if (mState == motionState.beginJump || mState == motionState.jumping)
+			return 4;
 		else
 			return 0;
 	}

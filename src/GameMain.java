@@ -58,22 +58,26 @@ public class GameMain {
 	 */
 	public void pollKeyboardInput()
 	{
-		if (Keyboard.isKeyDown(Keyboard.KEY_UP))
+		if (Keyboard.isKeyDown(Keyboard.KEY_Z))
 		{
-			hero.jump();
+			hero.up();
+		}
+		else
+		{
+			hero.verticalIdle();
 		}
 		
 		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT))
 		{
-			hero.runLeft();
+			hero.left();
 		}
 		else if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT))
 		{
-			hero.runRight();
+			hero.right();
 		}
 		else
 		{
-			hero.idle();
+			hero.horizontalIdle();
 		}
 	}
 	
