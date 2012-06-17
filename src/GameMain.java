@@ -43,6 +43,7 @@ public class GameMain {
 			
 			renderGL();
 			
+			hero.saveState();
 			pollKeyboardInput();
 			
 			Display.update();

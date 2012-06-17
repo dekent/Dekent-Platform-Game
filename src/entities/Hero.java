@@ -57,16 +57,21 @@ public class Hero {
 		frame = 0;
 	}
 	
+	public void saveState()
+	{
+		prevMState = mState;
+	}
+	
 	/**
 	 * Updates position based on velocities
 	 */
 	public void updatePosition(Level terrain)
 	{
-		System.out.println(onGround);
+		//prevMState = mState;
+		
 		boolean collision = false;
 		while (detectHorizontalCollision(terrain) == true)
 		{
-			System.out.println("Horizontal");
 			collision = true;
 			if (heroxSpeed < 0)
 			{
@@ -84,7 +89,6 @@ public class Hero {
 		collision = false;
 		while (detectVerticalCollision(terrain) == true)
 		{
-			System.out.println("Vertical");
 			collision = true;
 			if (heroySpeed < 0)
 			{
@@ -114,39 +118,11 @@ public class Hero {
 			heroySpeed -= .4;
 			if (heroySpeed < -15)
 				heroySpeed = -15;
-			/*
-			jumpCounter ++;
-			if (jumpCounter < 5)
-				heroySpeed += 1;
-			
-			heroySpeed -= .2;
-			
-			if (jumpCounter > 20)
-				finishedJump = true;
-			*/
 		}
 		else
 		{
 			verticalIdle();
 		}
-		/*
-		if (onGround)
-		{
-			mState = beginJump;
-			frame = 0;
-			heroySpeed = 3.0f;
-		}
-		else if (mState == beginJump)
-		{
-			idle();
-			
-		}
-		else
-		{
-			idle();
-			
-		}
-		*/
 	}
 	
 	/**
@@ -157,7 +133,6 @@ public class Hero {
 		if (mState != jumping && mState != beginJump && mState != ducking)
 		{
 			facing = left;
-			
 			mState = running;
 			
 			if (heroxSpeed > 0)
@@ -170,31 +145,6 @@ public class Hero {
 			if (heroxSpeed > -4)
 				heroxSpeed -= .25f;
 		}
-		
-		/*
-		if (mState != motionState.beginJump && mState != motionState.jumping)
-		{
-			facing = direction.left;
-			
-			if (mState != motionState.running)
-			{
-				mState = motionState.running;
-				frame = 32;	//closest run frame to the idle position for a more natural start
-				heroxSpeed = -.5f;
-			}
-			else
-			{
-				frame = (frame + 1) % 48;
-				if (heroxSpeed > -3)
-					heroxSpeed -= .5f;
-			}
-		}
-		else
-		{
-			if (heroxSpeed > -3)
-				heroxSpeed -= .25f;
-		}
-		*/
 	}
 	
 	/**
@@ -205,7 +155,6 @@ public class Hero {
 		if (mState != jumping && mState != beginJump && mState != ducking)
 		{
 			facing = right;
-			
 			mState = running;
 			
 			if (heroxSpeed < 0)
@@ -218,30 +167,6 @@ public class Hero {
 			if (heroxSpeed < 4)
 				heroxSpeed += .25f;
 		}
-		/*
-		if (mState != motionState.beginJump && mState != motionState.jumping)
-		{
-			facing = direction.right;
-			
-			if (mState != motionState.running)
-			{
-				mState = motionState.running;
-				frame = 32;	//closest run frame to the idle position for a more natural start
-				heroxSpeed = .5f;
-			}
-			else
-			{
-				frame = (frame + 1) % 48;
-				if (heroxSpeed < 3)
-					heroxSpeed += .5f;
-			}
-		}
-		else
-		{
-			if (heroxSpeed < 3)
-				heroxSpeed += .25f;
-		}
-		*/
 	}
 	
 	/**
@@ -261,59 +186,26 @@ public class Hero {
 		}
 		else
 		{
-			if (heroxSpeed > 0)
-				heroxSpeed = (int)(heroxSpeed - 1);
-			else if (heroxSpeed < 0)
-				heroxSpeed = (int)(heroxSpeed + 1);
-		}
-		/*
-		if (mState == motionState.jumping || mState == motionState.beginJump)
-		{
-			if (mState == motionState.beginJump)
+			if (mState == running)
 			{
-				frame ++;
-				if (frame == 12)
+				mState = endRun;
+			}
+			else if (mState == endRun)
+			{
+				if (prevMState != endRun)
 				{
-					mState = motionState.jumping;
+					if (frame == 8 || frame == 16)
+					{
+						mState = motionState.idle;
+					}
 				}
-			}
-			else
-			{
-				frame = (frame + 1) % 8;
-			}
-			
-			if (heroxSpeed > 0)
-				heroxSpeed = heroxSpeed - .05f;
-			else if (heroxSpeed < 0)
-				heroxSpeed = heroxSpeed + .05f;
-			
-			if (heroxSpeed < .05 && heroxSpeed > -.05)
-				heroxSpeed = 0;
-		}
-		else
-		{
-			if (mState == motionState.running)
-			{
-				mState = motionState.endRun;
-				if (frame < 8 || frame >= 32)
-					frame = 0;
-				else if (frame < 16 && frame >= 8)
-					frame = 4;
 				else
-					frame = 8;
-			}
-			else if (mState == motionState.endRun)
-			{
-				frame ++;
-				if (frame == 8 || frame == 16)
 				{
-					frame = 0;
-					mState = motionState.idle;
+					if (frame + 1 == 8 || frame + 1 == 16)
+					{
+						mState = motionState.idle;
+					}
 				}
-			}
-			else
-			{
-				mState = motionState.idle;
 			}
 			
 			if (heroxSpeed > 0)
@@ -321,7 +213,6 @@ public class Hero {
 			else if (heroxSpeed < 0)
 				heroxSpeed = (int)(heroxSpeed + 1);
 		}
-		*/
 	}
 	
 	public void verticalIdle()
@@ -372,45 +263,40 @@ public class Hero {
 			return false;
 	}
 	
-	/*
-	public void checkTerrainCollision(Level terrain)
-	{	
-		int correctedPos;
-		
-		if (heroySpeed < 0)
+	public void updateFrame()
+	{
+		if (mState == running)
 		{
-			correctedPos = terrain.detectGroundCollision(getX() + hitbox[0], getX() + hitbox[1], getY() + hitbox[2]);
-			if (correctedPos != -999)
+			if (prevMState != running)
 			{
-				heroy = correctedPos - hitbox[2];
-				heroySpeed = 0;
+				frame = 32;
+			}
+			else
+			{
+				frame = (frame + 1) % 48;
 			}
 		}
-		else if (heroySpeed > 0)
+		else if (mState == endRun)
 		{
-			correctedPos = terrain.detectRoofCollision(getX() + hitbox[0], getX() + hitbox[1], getY() + hitbox[3]);
-			if (correctedPos != -999)
+			if (prevMState != endRun)
 			{
-				heroy = correctedPos - hitbox[3] - 1;
-				heroySpeed = 0;
+				if (frame < 8 || frame >= 32)
+					frame = 0;
+				else if (frame < 16 && frame >= 8)
+					frame = 4;
+				else
+					frame = 8;
+			}
+			else
+			{
+				frame ++;
 			}
 		}
-		
-		correctedPos = terrain.detectLeftCollision(getX() + hitbox[0] - 3, getY() + hitbox[2] + 1, getY() + hitbox[3]);
-		if (correctedPos != -999)
+		else
 		{
-			herox = correctedPos - (hitbox[0] - 4);
-			heroxSpeed = 0;
-		}
-		
-		correctedPos = terrain.detectRightCollision(getX() + hitbox[1] + 3, getY() + hitbox[2] + 1, getY() + hitbox[3]);
-		if (correctedPos != -999)
-		{
-			herox = correctedPos - (hitbox[1] + 4);
-			heroxSpeed = 0;
+			frame = 0;
 		}
 	}
-	*/
 	
 	/**
 	 * Mapping of frames to x coordinates on the sprite sheet
@@ -457,6 +343,8 @@ public class Hero {
 	 */
 	public void renderSprite()
 	{
+		updateFrame();
+		
 		int x = determineFrameX();
 		int y = determineFrameY();
 	
