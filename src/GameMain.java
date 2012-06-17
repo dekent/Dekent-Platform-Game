@@ -38,8 +38,8 @@ public class GameMain {
 		while(!Display.isCloseRequested())	//exits when window is closed
 		{
 			hero.onGround(terrain);
-			hero.updatePosition();
-			detectTerrainCollision();
+			hero.updatePosition(terrain);
+			//detectTerrainCollision();
 			
 			renderGL();
 			
@@ -86,7 +86,7 @@ public class GameMain {
 	 */
 	public void detectTerrainCollision()
 	{		
-		hero.checkTerrainCollision(terrain);
+		//hero.checkTerrainCollision(terrain);
 	}
 	
 	/**

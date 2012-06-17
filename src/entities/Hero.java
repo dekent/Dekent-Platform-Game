@@ -33,7 +33,7 @@ public class Hero {
 	motionState prevMState;
 	direction facing;
 	boolean onGround;
-	int[] hitbox = {20, 44, 0, 52};	//x1, x2, y1, y2
+	int[] hitbox = {20, 46, 1, 52};	//x1, x2, y1, y2
 	int frame;
 	int jumpCounter = 0;
 	boolean finishedJump = true;
@@ -60,21 +60,46 @@ public class Hero {
 	/**
 	 * Updates position based on velocities
 	 */
-	public void updatePosition()
+	public void updatePosition(Level terrain)
 	{
-		herox += heroxSpeed;
-		
-		/*
-		if (!onGround)
+		System.out.println(onGround);
+		boolean collision = false;
+		while (detectHorizontalCollision(terrain) == true)
 		{
-			heroySpeed -= .2;
-			if (heroySpeed < -10)
-				heroySpeed = -10;
+			System.out.println("Horizontal");
+			collision = true;
+			if (heroxSpeed < 0)
+			{
+				heroxSpeed = (int)(heroxSpeed + 1);
+			}
+			else if (heroxSpeed > 0)
+			{
+				heroxSpeed = (int)(heroxSpeed - 1);
+			}
 		}
-		*/
+		herox += heroxSpeed;
+		if (collision)
+			heroxSpeed = 0;
+		
+		collision = false;
+		while (detectVerticalCollision(terrain) == true)
+		{
+			System.out.println("Vertical");
+			collision = true;
+			if (heroySpeed < 0)
+			{
+				heroySpeed = (int)(heroySpeed + 1);
+			}
+			else if (heroySpeed > 0)
+			{
+				heroySpeed = (int)(heroySpeed - 1);
+			}
+		}
 		heroy += heroySpeed;
+		if (collision)
+			heroySpeed = 0;
 	}
-	
+
 	public void up()
 	{
 		if (onGround)
@@ -319,7 +344,7 @@ public class Hero {
 	
 	public boolean onGround(Level terrain)
 	{
-		onGround = terrain.checkIfStanding(getX() + hitbox[0], getX() + hitbox[1], getY() + hitbox[2]);
+		onGround = terrain.checkIfStanding(getX() + hitbox[0], getX()-1 + hitbox[1], getY() + hitbox[2] - 1);
 		if (onGround && (mState == motionState.jumping || mState == motionState.beginJump))
 		{
 			mState = motionState.idle;
@@ -327,6 +352,27 @@ public class Hero {
 		return onGround;
 	}
 	
+	public boolean detectVerticalCollision(Level terrain)
+	{		
+		if (heroySpeed < 0)
+			return terrain.detectGroundCollision(getX() + hitbox[0], getX()-1 + hitbox[1], (int)(getY() + hitbox[2] + heroySpeed));			
+		else if (heroySpeed > 0)
+			return terrain.detectRoofCollision(getX() + hitbox[0], getX()-1 + hitbox[1], (int)(getY() + hitbox[3] + heroySpeed));
+		else
+			return false;
+	}
+	
+	public boolean detectHorizontalCollision(Level terrain)
+	{
+		if (heroxSpeed < 0)
+			return terrain.detectLeftCollision((int)(getX() + hitbox[0] + heroxSpeed), getY() + hitbox[2], getY() + hitbox[3]);
+		else if (heroxSpeed > 0)
+			return terrain.detectRightCollision((int)(getX() + hitbox[1] + heroxSpeed), getY() + hitbox[2], getY() + hitbox[3]);
+		else
+			return false;
+	}
+	
+	/*
 	public void checkTerrainCollision(Level terrain)
 	{	
 		int correctedPos;
@@ -364,6 +410,7 @@ public class Hero {
 			heroxSpeed = 0;
 		}
 	}
+	*/
 	
 	/**
 	 * Mapping of frames to x coordinates on the sprite sheet
