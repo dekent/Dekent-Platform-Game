@@ -68,6 +68,9 @@ public class GameMain {
 			hero.verticalIdle();
 		}
 		
+		if (!Keyboard.isKeyDown(Keyboard.KEY_Z))
+			hero.resetJump();
+		
 		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT))
 		{
 			hero.left();

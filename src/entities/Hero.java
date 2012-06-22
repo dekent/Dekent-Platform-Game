@@ -33,6 +33,8 @@ public class Hero {
 	motionState prevMState;
 	direction facing;
 	boolean onGround;
+	boolean jumpReleased;
+	boolean falling;
 	int[] hitbox = {20, 46, 1, 52};	//x1, x2, y1, y2
 	int frame;
 	int jumpCounter = 0;
@@ -54,6 +56,7 @@ public class Hero {
 		mState = idle;
 		facing = dir;
 		onGround = true;
+		jumpReleased = true;
 		frame = 0;
 	}
 	
@@ -66,9 +69,7 @@ public class Hero {
 	 * Updates position based on velocities
 	 */
 	public void updatePosition(Level terrain)
-	{
-		//prevMState = mState;
-		
+	{		
 		boolean collision = false;
 		while (detectHorizontalCollision(terrain) == true)
 		{
@@ -108,10 +109,14 @@ public class Hero {
 	{
 		if (onGround)
 		{
-			finishedJump = false;
-			jumpCounter = 0;
-			mState = beginJump;
-			heroySpeed = 9;
+			if (jumpReleased)
+			{
+				jumpReleased = false;
+				finishedJump = false;
+				jumpCounter = 0;
+				mState = beginJump;
+				heroySpeed = 9;
+			}
 		}
 		else if (!finishedJump)
 		{
@@ -123,6 +128,11 @@ public class Hero {
 		{
 			verticalIdle();
 		}
+	}
+	
+	public void resetJump()
+	{
+		jumpReleased = true;
 	}
 	
 	/**
@@ -142,6 +152,7 @@ public class Hero {
 		}
 		else
 		{
+			facing = left;
 			if (heroxSpeed > -4)
 				heroxSpeed -= .25f;
 		}
@@ -164,6 +175,7 @@ public class Hero {
 		}
 		else
 		{
+			facing = right;
 			if (heroxSpeed < 4)
 				heroxSpeed += .25f;
 		}
@@ -222,7 +234,6 @@ public class Hero {
 			finishedJump = true;
 			if (heroySpeed > 3)
 				heroySpeed = 3;
-			finishedJump = true;
 		}
 		
 		if (!onGround)
@@ -236,9 +247,18 @@ public class Hero {
 	public boolean onGround(Level terrain)
 	{
 		onGround = terrain.checkIfStanding(getX() + hitbox[0], getX()-1 + hitbox[1], getY() + hitbox[2] - 1);
-		if (onGround && (mState == motionState.jumping || mState == motionState.beginJump))
+		if (!onGround && mState != jumping && mState != beginJump)
+		{
+			mState = jumping;
+		}
+		
+		if (onGround)
+			falling = false;
+		
+		if (onGround && (mState == motionState.jumping || mState == motionState.beginJump) && (prevMState == jumping || prevMState == beginJump))
 		{
 			mState = motionState.idle;
+			frame = 0;
 		}
 		return onGround;
 	}
@@ -292,6 +312,33 @@ public class Hero {
 				frame ++;
 			}
 		}
+		else if (mState == beginJump)
+		{
+			if (prevMState != beginJump)
+				frame = 0;
+			else
+				frame ++;
+			
+			if (frame == 16)
+				mState = jumping;
+		}
+		else if (mState == jumping)
+		{
+			if (heroySpeed >= -5.0 && !falling)
+				frame = 16;
+			else if (!falling)
+			{
+				frame = 20;
+				falling = true;
+			}
+			else
+			{
+				if (frame < 24)
+					frame ++;
+				else
+					frame = 24;
+			}
+		}
 		else
 		{
 			frame = 0;
@@ -312,7 +359,7 @@ public class Hero {
 		else if (mState == motionState.beginJump)	//TODO: add directions
 			return (int)frame/4;
 		else if (mState == motionState.jumping)	//TODO: add directions and animation
-			return 3;
+			return (int)frame/4;
 		else if (facing == direction.right)
 			return 0;
 		else
@@ -332,8 +379,10 @@ public class Hero {
 			return 2;
 		else if (mState == motionState.endRun)
 			return 3;
-		else if (mState == motionState.beginJump || mState == motionState.jumping)
+		else if ((mState == motionState.beginJump || mState == motionState.jumping) && facing == right)
 			return 4;
+		else if ((mState == beginJump || mState == jumping) && facing == left)
+			return 5;
 		else
 			return 0;
 	}
@@ -376,7 +425,7 @@ public class Hero {
 	public void loadTexture()
 	{
 		try {
-			texture = TextureLoader.getTexture("png", ResourceLoader.getResourceAsStream("sprites/prototype2.png"));
+			texture = TextureLoader.getTexture("png", ResourceLoader.getResourceAsStream("sprites/prototype.png"));
 		} catch (IOException e) {e.printStackTrace();}
 	}
 	
