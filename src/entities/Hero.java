@@ -18,7 +18,7 @@ public class Hero {
 	private Texture texture;
 	
 	public enum motionState {
-		running, jumping, idle, ducking, beginDuck, beginJump, endRun, endDuck, landing, rolling
+		running, jumping, idle, ducking, beginDuck, beginJump, endRun, endDuck, hardLanding, rolling
 	}
 	
 	public enum direction {
@@ -35,6 +35,7 @@ public class Hero {
 	boolean onGround;
 	boolean jumpReleased;
 	boolean falling;
+	boolean hardFalling;
 	int[] hitbox = {20, 46, 1, 52};	//x1, x2, y1, y2
 	int frame;
 	int jumpCounter = 0;
@@ -58,6 +59,7 @@ public class Hero {
 		onGround = true;
 		jumpReleased = true;
 		frame = 0;
+		hardFalling = false;
 	}
 	
 	public void saveState()
@@ -93,6 +95,7 @@ public class Hero {
 			collision = true;
 			if (heroySpeed < 0)
 			{
+				
 				heroySpeed = (int)(heroySpeed + 1);
 			}
 			else if (heroySpeed > 0)
@@ -107,7 +110,7 @@ public class Hero {
 
 	public void up()
 	{
-		if (onGround)
+		if (onGround && mState != hardLanding && mState != ducking && mState != beginDuck)
 		{
 			if (jumpReleased)
 			{
@@ -121,6 +124,8 @@ public class Hero {
 		else if (!finishedJump)
 		{
 			heroySpeed -= .4;
+			if (heroySpeed < -12)
+				hardFalling = true;
 			if (heroySpeed < -15)
 				heroySpeed = -15;
 		}
@@ -132,7 +137,8 @@ public class Hero {
 	
 	public void resetJump()
 	{
-		jumpReleased = true;
+		if (onGround)
+			jumpReleased = true;
 	}
 	
 	/**
@@ -140,7 +146,7 @@ public class Hero {
 	 */
 	public void left()
 	{
-		if (mState != jumping && mState != beginJump && mState != ducking)
+		if (mState != jumping && mState != beginJump && mState != ducking && mState != hardLanding)
 		{
 			facing = left;
 			mState = running;
@@ -150,6 +156,8 @@ public class Hero {
 			else if (heroxSpeed > -4)
 				heroxSpeed -= .5f;
 		}
+		else if (mState == hardLanding)
+			heroxSpeed *= .9;
 		else
 		{
 			facing = left;
@@ -163,7 +171,7 @@ public class Hero {
 	 */
 	public void right()
 	{
-		if (mState != jumping && mState != beginJump && mState != ducking)
+		if (mState != jumping && mState != beginJump && mState != ducking && mState != hardLanding)
 		{
 			facing = right;
 			mState = running;
@@ -173,6 +181,8 @@ public class Hero {
 			else if (heroxSpeed < 4)
 				heroxSpeed += .5f;
 		}
+		else if (mState == hardLanding)
+			heroxSpeed *= .9;
 		else
 		{
 			facing = right;
@@ -239,6 +249,8 @@ public class Hero {
 		if (!onGround)
 		{
 			heroySpeed -= .4;
+			if (heroySpeed < -12)
+				hardFalling = true;
 			if (heroySpeed < -15)
 				heroySpeed = -15;
 		}
@@ -255,10 +267,20 @@ public class Hero {
 		if (onGround)
 			falling = false;
 		
-		if (onGround && (mState == motionState.jumping || mState == motionState.beginJump) && (prevMState == jumping || prevMState == beginJump))
+		//Handle landing
+		if (onGround && (mState == jumping || mState == beginJump) && (prevMState == jumping || prevMState == beginJump))
 		{
-			mState = motionState.idle;
-			frame = 0;
+			if (hardFalling)
+			{
+				hardFalling = false;
+				mState = hardLanding;
+				frame = 28;
+			}
+			else
+			{
+				mState = idle;
+				frame = 0;
+			}
 		}
 		return onGround;
 	}
@@ -339,6 +361,15 @@ public class Hero {
 					frame = 24;
 			}
 		}
+		else if (mState == hardLanding)
+		{
+			if (frame < 36)
+				frame += 2;
+			else
+				frame ++;
+			if (frame > 55)
+				mState = idle;
+		}
 		else
 		{
 			frame = 0;
@@ -352,15 +383,24 @@ public class Hero {
 	 */
 	public int determineFrameX() 
 	{
-		if (mState == motionState.running || (mState == motionState.endRun && facing == direction.right))
+		if (mState == running || (mState == endRun && facing == right))
 			return (int)frame/4;
-		else if (mState == motionState.endRun && facing == direction.left)
+		else if (mState == endRun && facing == left)
 			return (int)frame/4 + 4;
-		else if (mState == motionState.beginJump)	//TODO: add directions
+		else if (mState == beginJump)
 			return (int)frame/4;
-		else if (mState == motionState.jumping)	//TODO: add directions and animation
+		else if (mState == jumping)
 			return (int)frame/4;
-		else if (facing == direction.right)
+		else if (mState == hardLanding)
+		{
+			if (frame < 36)
+				return (int)frame/4;
+			else if (frame < 48)
+				return 9;
+			else
+				return (int)(frame - 8)/4;
+		}
+		else if (facing == right)
 			return 0;
 		else
 			return 1;
@@ -373,15 +413,15 @@ public class Hero {
 	 */
 	public int determineFrameY()
 	{
-		if (mState == motionState.running && facing == direction.right)
+		if (mState == running && facing == right)
 			return 1;
-		else if (mState == motionState.running && facing == direction.left)
+		else if (mState == running && facing == left)
 			return 2;
-		else if (mState == motionState.endRun)
+		else if (mState == endRun)
 			return 3;
-		else if ((mState == motionState.beginJump || mState == motionState.jumping) && facing == right)
+		else if ((mState == beginJump || mState == jumping || mState == hardLanding) && facing == right)
 			return 4;
-		else if ((mState == beginJump || mState == jumping) && facing == left)
+		else if ((mState == beginJump || mState == jumping || mState == hardLanding) && facing == left)
 			return 5;
 		else
 			return 0;

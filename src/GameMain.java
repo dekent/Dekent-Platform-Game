@@ -34,12 +34,15 @@ public class GameMain {
 		initTerrain();
 		loadTextures();
 		
+		int render = 0;
+		
 		//Main game loop
 		while(!Display.isCloseRequested())	//exits when window is closed
 		{
 			hero.onGround(terrain);
 			hero.updatePosition(terrain);
 			//detectTerrainCollision();
+			
 			
 			renderGL();
 			
